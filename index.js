@@ -10,20 +10,36 @@ app.use(bodyParser.json())
 
 var apiURL = 'https://www.bicing.cat/availability_map/getJsonObject'
 
-app.get('/availability', (req, res) => {
+const loadBCN = () => {
+  return new Promise((resolve, reject) => {
+    request(apiURL, function (error, response, body) {
+      if (error) reject(error);
+      resolve(body);
+    });
+  });
+};
 
-	request(apiURL, function (error, response, body) {
-	  console.log('requesting' + apiURL)
-	  console.log('error:', error); // Print the error if one occurred
-	  console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-	  console.log('body:', body); // Print the HTML for the Google homepage.
-	  res.send(body)
-	})
+const dataBCN = false;
 
-})
+const main = async () => {
+  const dataBCN = await loadBCN();
+ 
+  app.post('/search', (req, res) => {
+    console.log(req.params)
+    res.send(dataBCN);
+  })
+
+  app.get('/', (req, res) => {
+    res.sendStatus(200)
+  })
+};
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(port, () => {
     console.log(`${appName} listening on port ${port}...`)
   })
 }
+
+main();
+
+module.exports = app
